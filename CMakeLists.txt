@@ -12,7 +12,9 @@ include_directories(
 
 SET(SOURCES src/**/*.c)
 
-add_executable(contact_manager src/main.c)
+add_executable(contact_manager src/main.c
+        include/model.h
+        src/model.c)
 
 target_link_libraries(contact_manager ${GTK_LIBRARIES})
 target_compile_options(contact_manager PRIVATE ${GTK_CFLAGS_OTHER})
