@@ -1,20 +1,35 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 3.16)
 project(contact_manager C)
 
 set(CMAKE_C_STANDARD 23)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED gtk4)
-include_directories(
-    ${GTK_INCLUDE_DIRS}
-    ${CMAKE_SOURCE_DIR}/include
+
+find_library(UUID_LIBRARY uuid)
+if (NOT UUID_LIBRARY)
+    message(FATAL_ERROR "libuuid not found")
+endif()
+
+set(SOURCES
+        src/main.c
+        src/util.c
+        src/phonebook.c
+        src/contact.c
+        src/phone.c
+        src/address.c
 )
 
-SET(SOURCES src/**/*.c)
+add_executable(contact_manager ${SOURCES})
 
-add_executable(contact_manager src/main.c
-        include/model.h
-        src/model.c)
+target_include_directories(contact_manager PRIVATE
+        ${GTK_INCLUDE_DIRS}
+        ${CMAKE_SOURCE_DIR}/include
+)
 
-target_link_libraries(contact_manager ${GTK_LIBRARIES})
+target_link_libraries(contact_manager
+        ${GTK_LIBRARIES}
+        ${UUID_LIBRARY}
+)
+
 target_compile_options(contact_manager PRIVATE ${GTK_CFLAGS_OTHER})

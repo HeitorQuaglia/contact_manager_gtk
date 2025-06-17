@@ -1,5 +1,12 @@
-#include "model.h"
+#include "phonebook.h"
+
 #include <stdlib.h>
+#include <string.h>
+#include <uuid/uuid.h>
+
+#include "contact.h"
+#include "phone.h"
+#include "util.h"
 
 PhoneBook *phonebook_create(void) {
     PhoneBook *phonebook = malloc(sizeof(PhoneBook));
@@ -8,7 +15,14 @@ PhoneBook *phonebook_create(void) {
     }
     phonebook->contacts = NULL;
     phonebook->contact_count = 0;
-    phonebook->phonebook_id = 0;
+    phonebook->phonebook_id = malloc(UUID_STR_LEN * sizeof(char));
+
+    if (generate_uuid(phonebook->phonebook_id) != UUID_GEN_SUCCESS) {
+        free(phonebook->phonebook_id);
+        free(phonebook);
+        return NULL;
+    }
+
     return phonebook;
 }
 
@@ -18,7 +32,7 @@ int phonebook_destroy(PhoneBook *phonebook) {
     }
 
     for (int i = 0; i < phonebook->contact_count; i++) {
-        Contact *c = &phonebook->contacts[i];
+        const Contact *c = &phonebook->contacts[i];
 
         for (int j = 0; j < c->phone_count; j++) {
             phone_destroy(&c->phones[j]);
@@ -35,6 +49,7 @@ int phonebook_destroy(PhoneBook *phonebook) {
     }
 
     free(phonebook->contacts);
+    free(phonebook->phonebook_id);
     free(phonebook);
 
     return MODEL_OP_SUCCESS;
@@ -61,12 +76,23 @@ int phonebook_add_contact(PhoneBook *phonebook, Contact *contact) {
     return MODEL_OP_SUCCESS;
 }
 
-int phonebook_remove_contact(PhoneBook *phonebook, int index) {
-    if (!phonebook || index < 0 || index >= phonebook->contact_count) {
-        return MODEL_OP_ERR;
+int phonebook_remove_contact(PhoneBook *phonebook, const char *contact_id) {
+    if (!phonebook || !contact_id) {
+        return MODEL_EMPTY_RESOURCE;
     }
 
-    Contact *c = &phonebook->contacts[index];
+    int index = -1;
+    for (int i = 0; i < phonebook->contact_count; i++) {
+        if (strcmp(phonebook->contacts[i].contact_id, contact_id) == 0) {
+            index = i;
+            break;
+        }
+    }
+    if (index == -1) {
+        return MODEL_RESOURCE_NOT_FOUND;
+    }
+
+    const Contact *c = &phonebook->contacts[index];
 
     for (int j = 0; j < c->phone_count; j++) {
         phone_destroy(&c->phones[j]);
@@ -80,22 +106,23 @@ int phonebook_remove_contact(PhoneBook *phonebook, int index) {
 
     free(c->name);
     free(c->email);
+    free(c->contact_id);
 
     for (int i = index; i < phonebook->contact_count - 1; i++) {
         phonebook->contacts[i] = phonebook->contacts[i + 1];
     }
 
-    size_t new_size = phonebook->contact_count - 1;
+    const size_t new_size = phonebook->contact_count - 1;
     Contact *reallocated_contacts = (new_size > 0)
-        ? realloc(phonebook->contacts, sizeof(Contact) * new_size)
-        : NULL;
+                                        ? realloc(phonebook->contacts, sizeof(Contact) * new_size)
+                                        : NULL;
 
     if (!reallocated_contacts && new_size > 0) {
         return MODEL_REALLOC_ERR;
     }
 
     phonebook->contacts = reallocated_contacts;
-    phonebook->contact_count--;
+    phonebook->contact_count = new_size;
 
     return MODEL_OP_SUCCESS;
 }
