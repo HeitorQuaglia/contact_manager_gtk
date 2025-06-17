@@ -32,7 +32,7 @@ int phonebook_destroy(PhoneBook *phonebook) {
     }
 
     for (int i = 0; i < phonebook->contact_count; i++) {
-        const Contact *c = &phonebook->contacts[i];
+        const struct Contact *c = &phonebook->contacts[i];
 
         for (int j = 0; j < c->phone_count; j++) {
             phone_destroy(&c->phones[j]);
@@ -55,14 +55,14 @@ int phonebook_destroy(PhoneBook *phonebook) {
     return MODEL_OP_SUCCESS;
 }
 
-int phonebook_add_contact(PhoneBook *phonebook, Contact *contact) {
+int phonebook_add_contact(PhoneBook *phonebook, struct Contact *contact) {
     if (!phonebook || !contact) {
         return MODEL_EMPTY_RESOURCE;
     }
 
-    Contact *reallocated_contacts = realloc(
+    struct Contact *reallocated_contacts = realloc(
         phonebook->contacts,
-        sizeof(Contact) * (phonebook->contact_count + 1)
+        sizeof(struct Contact) * (phonebook->contact_count + 1)
     );
 
     if (!reallocated_contacts) {
@@ -92,7 +92,7 @@ int phonebook_remove_contact(PhoneBook *phonebook, const char *contact_id) {
         return MODEL_RESOURCE_NOT_FOUND;
     }
 
-    const Contact *c = &phonebook->contacts[index];
+    const struct Contact *c = &phonebook->contacts[index];
 
     for (int j = 0; j < c->phone_count; j++) {
         phone_destroy(&c->phones[j]);
@@ -113,8 +113,8 @@ int phonebook_remove_contact(PhoneBook *phonebook, const char *contact_id) {
     }
 
     const size_t new_size = phonebook->contact_count - 1;
-    Contact *reallocated_contacts = (new_size > 0)
-                                        ? realloc(phonebook->contacts, sizeof(Contact) * new_size)
+    struct Contact *reallocated_contacts = (new_size > 0)
+                                        ? realloc(phonebook->contacts, sizeof(struct Contact) * new_size)
                                         : NULL;
 
     if (!reallocated_contacts && new_size > 0) {

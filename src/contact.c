@@ -7,6 +7,8 @@
 #include "address.h"
 #include "phone.h"
 #include "util.h"
+#include "phonebook.h"
+#include "model.h"
 
 Contact *contact_create(void) {
     Contact *contact = malloc(sizeof(Contact));
@@ -28,7 +30,7 @@ Contact *contact_create(void) {
     return contact;
 }
 
-Contact *find_contact(PhoneBook *phonebook, const char *contact_id) {
+Contact *find_contact(struct PhoneBook *phonebook, const char *contact_id) {
     if (!phonebook || !contact_id) {
         return NULL;
     }

@@ -2,9 +2,10 @@
 #define CONTACT_H
 #include "address.h"
 #include "phone.h"
-#include "phonebook.h"
 
-typedef struct {
+struct PhoneBook;
+
+typedef struct Contact {
     char *contact_id;
     char *name;
     char *email;
@@ -15,7 +16,7 @@ typedef struct {
 } Contact;
 
 Contact *contact_create(void);
-Contact *find_contact(PhoneBook *phonebook, char *contact_id);
+Contact *find_contact(struct PhoneBook *phonebook, const char *contact_id);
 int contact_clear_phones(Contact *contact);
 int contact_clear_addresses(Contact *contact);
 int contact_destroy(Contact *contact);
