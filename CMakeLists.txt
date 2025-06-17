@@ -18,6 +18,7 @@ set(SOURCES
         src/contact.c
         src/phone.c
         src/address.c
+        src/ui/main_window.c
 )
 
 add_executable(contact_manager ${SOURCES})
@@ -25,6 +26,7 @@ add_executable(contact_manager ${SOURCES})
 target_include_directories(contact_manager PRIVATE
         ${GTK_INCLUDE_DIRS}
         ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/ui
 )
 
 target_link_libraries(contact_manager

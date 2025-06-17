@@ -1,12 +1,12 @@
-#include "phonebook.h"
-
 #include <stdlib.h>
 #include <string.h>
 #include <uuid/uuid.h>
 
 #include "contact.h"
+#include "model.h"
 #include "phone.h"
 #include "util.h"
+#include "phonebook.h"
 
 PhoneBook *phonebook_create(void) {
     PhoneBook *phonebook = malloc(sizeof(PhoneBook));

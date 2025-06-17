@@ -4,6 +4,8 @@
 #include <string.h>
 #include <uuid/uuid.h>
 
+#include "address.h"
+#include "phone.h"
 #include "util.h"
 
 Contact *contact_create(void) {

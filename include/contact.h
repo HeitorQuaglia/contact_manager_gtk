@@ -1,6 +1,7 @@
 #ifndef CONTACT_H
 #define CONTACT_H
-#include "model.h"
+#include "address.h"
+#include "phone.h"
 #include "phonebook.h"
 
 typedef struct {

@@ -1,6 +1,5 @@
 #ifndef PHONEBOOK_H
 #define PHONEBOOK_H
-
 #include "contact.h"
 
 typedef struct {
