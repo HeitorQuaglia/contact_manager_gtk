@@ -2,5 +2,6 @@
 <gresources>
   <gresource prefix="/org/example/contact-manager">
     <file>phonebook_manager_window.ui</file>
+    <file>contact_manager_window.ui</file>
   </gresource>
 </gresources> 

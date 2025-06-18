@@ -30,10 +30,12 @@ set(SOURCES
         src/util.c
         src/phonebook.c
         src/contact.c
+        src/contact_object.c
         src/phone.c
         src/address.c
         src/phonebook_manager.c
         src/ui/phonebook_manager_window.c
+        src/ui/contact_manager_window.c
         ${RESOURCES_C}
 )
 

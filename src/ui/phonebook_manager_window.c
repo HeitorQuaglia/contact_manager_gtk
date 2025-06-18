@@ -1,4 +1,5 @@
 #include "phonebook_manager_window.h"
+#include "contact_manager_window.h"
 
 struct _PhonebookManagerWindow {
     GtkApplicationWindow parent_instance;
@@ -46,6 +47,14 @@ static void on_selection_changed(GtkSingleSelection *selection, GParamSpec *pspe
     gtk_widget_set_sensitive(win->delete_button, selected);
 }
 
+static void on_phonebook_activated(GtkListView *list_view, guint position, gpointer user_data) {
+    PhonebookManagerWindow *win = user_data;
+    PhoneBook *pb = win->manager->phonebooks[position];
+
+    GtkWindow *contact_win = GTK_WINDOW(contact_manager_window_new(GTK_APPLICATION(g_application_get_default()), pb));
+    gtk_window_present(contact_win);
+}
+
 static void phonebook_manager_window_init(PhonebookManagerWindow *win) {
     gtk_widget_init_template(GTK_WIDGET(win));
 }
@@ -86,6 +95,7 @@ GtkWidget *phonebook_manager_window_new(GtkApplication *app, PhoneBookManager *m
     win->list_view = gtk_list_view_new(GTK_SELECTION_MODEL(selection_model), factory);
 
     g_signal_connect(selection_model, "notify::selected", G_CALLBACK(on_selection_changed), win);
+    g_signal_connect(win->list_view, "activate", G_CALLBACK(on_phonebook_activated), win);
 
     // Add list view to the scrolled window from the UI file
     GtkWidget *scrolled_window = gtk_widget_get_first_child(gtk_widget_get_last_child(GTK_WIDGET(win))); // This is fragile. Assume Box -> ScrolledWindow

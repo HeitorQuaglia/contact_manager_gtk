@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <uuid/uuid.h>
+#include <glib.h>
 
 #include "contact.h"
 #include "model.h"
@@ -9,120 +10,38 @@
 #include "phonebook.h"
 
 PhoneBook *phonebook_create(void) {
-    PhoneBook *phonebook = malloc(sizeof(PhoneBook));
-    if (!phonebook) {
-        return NULL;
-    }
-    phonebook->contacts = NULL;
-    phonebook->contact_count = 0;
-    phonebook->phonebook_id = malloc(UUID_STR_LEN * sizeof(char));
-
+    PhoneBook *phonebook = g_new(PhoneBook, 1);
+    phonebook->phonebook_id = g_malloc(UUID_STR_LEN);
     if (generate_uuid(phonebook->phonebook_id) != UUID_GEN_SUCCESS) {
-        free(phonebook->phonebook_id);
-        free(phonebook);
+        g_free(phonebook->phonebook_id);
+        g_free(phonebook);
         return NULL;
     }
-
+    phonebook->contacts = g_ptr_array_new_with_free_func(g_object_unref);
     return phonebook;
 }
 
-int phonebook_destroy(PhoneBook *phonebook) {
-    if (!phonebook) {
-        return MODEL_EMPTY_RESOURCE;
-    }
-
-    for (int i = 0; i < phonebook->contact_count; i++) {
-        const struct Contact *c = &phonebook->contacts[i];
-
-        for (int j = 0; j < c->phone_count; j++) {
-            phone_destroy(&c->phones[j]);
-        }
-        free(c->phones);
-
-        for (int j = 0; j < c->address_count; j++) {
-            address_destroy(&c->address[j]);
-        }
-        free(c->address);
-
-        free(c->name);
-        free(c->email);
-    }
-
-    free(phonebook->contacts);
-    free(phonebook->phonebook_id);
-    free(phonebook);
-
-    return MODEL_OP_SUCCESS;
+void phonebook_destroy(PhoneBook *phonebook) {
+    if (!phonebook) return;
+    g_free(phonebook->phonebook_id);
+    g_ptr_array_free(phonebook->contacts, TRUE);
+    g_free(phonebook);
 }
 
-int phonebook_add_contact(PhoneBook *phonebook, struct Contact *contact) {
-    if (!phonebook || !contact) {
-        return MODEL_EMPTY_RESOURCE;
-    }
-
-    struct Contact *reallocated_contacts = realloc(
-        phonebook->contacts,
-        sizeof(struct Contact) * (phonebook->contact_count + 1)
-    );
-
-    if (!reallocated_contacts) {
-        return MODEL_REALLOC_ERR;
-    }
-
-    phonebook->contacts = reallocated_contacts;
-    phonebook->contacts[phonebook->contact_count] = *contact;
-    phonebook->contact_count++;
-
-    return MODEL_OP_SUCCESS;
+void phonebook_add_contact(PhoneBook *phonebook, ContactObject *contact) {
+    g_return_if_fail(phonebook != NULL && contact != NULL);
+    g_ptr_array_add(phonebook->contacts, g_object_ref(contact));
 }
 
-int phonebook_remove_contact(PhoneBook *phonebook, const char *contact_id) {
-    if (!phonebook || !contact_id) {
-        return MODEL_EMPTY_RESOURCE;
-    }
+gboolean phonebook_remove_contact(PhoneBook *phonebook, const char *contact_id) {
+    g_return_val_if_fail(phonebook != NULL && contact_id != NULL, FALSE);
 
-    int index = -1;
-    for (int i = 0; i < phonebook->contact_count; i++) {
-        if (strcmp(phonebook->contacts[i].contact_id, contact_id) == 0) {
-            index = i;
-            break;
+    for (guint i = 0; i < phonebook->contacts->len; i++) {
+        ContactObject *contact = g_ptr_array_index(phonebook->contacts, i);
+        if (g_strcmp0(contact_object_get_id(contact), contact_id) == 0) {
+            g_ptr_array_remove_index(phonebook->contacts, i);
+            return TRUE;
         }
     }
-    if (index == -1) {
-        return MODEL_RESOURCE_NOT_FOUND;
-    }
-
-    const struct Contact *c = &phonebook->contacts[index];
-
-    for (int j = 0; j < c->phone_count; j++) {
-        phone_destroy(&c->phones[j]);
-    }
-    free(c->phones);
-
-    for (int j = 0; j < c->address_count; j++) {
-        address_destroy(&c->address[j]);
-    }
-    free(c->address);
-
-    free(c->name);
-    free(c->email);
-    free(c->contact_id);
-
-    for (int i = index; i < phonebook->contact_count - 1; i++) {
-        phonebook->contacts[i] = phonebook->contacts[i + 1];
-    }
-
-    const size_t new_size = phonebook->contact_count - 1;
-    struct Contact *reallocated_contacts = (new_size > 0)
-                                        ? realloc(phonebook->contacts, sizeof(struct Contact) * new_size)
-                                        : NULL;
-
-    if (!reallocated_contacts && new_size > 0) {
-        return MODEL_REALLOC_ERR;
-    }
-
-    phonebook->contacts = reallocated_contacts;
-    phonebook->contact_count = new_size;
-
-    return MODEL_OP_SUCCESS;
+    return FALSE;
 }
