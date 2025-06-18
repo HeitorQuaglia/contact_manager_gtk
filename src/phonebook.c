@@ -17,6 +17,7 @@ PhoneBook *phonebook_create(void) {
         g_free(phonebook);
         return NULL;
     }
+    phonebook->name = g_strdup("New Phonebook");
     phonebook->contacts = g_ptr_array_new_with_free_func(g_object_unref);
     return phonebook;
 }
@@ -24,6 +25,7 @@ PhoneBook *phonebook_create(void) {
 void phonebook_destroy(PhoneBook *phonebook) {
     if (!phonebook) return;
     g_free(phonebook->phonebook_id);
+    g_free(phonebook->name);
     g_ptr_array_free(phonebook->contacts, TRUE);
     g_free(phonebook);
 }

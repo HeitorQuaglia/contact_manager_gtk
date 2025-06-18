@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="PhonebooksView" parent="AdwBin">
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="hscrollbar-policy">never</property>
+            <property name="vscrollbar-policy">automatic</property>
+            <property name="vexpand">1</property>
+            <property name="child">
+              <object class="GtkListView" id="list_view">
+                <property name="single-click-activate">true</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkActionBar">
+            <child>
+              <object class="GtkButton" id="add_button">
+                <property name="label" translatable="yes">_Add Phonebook</property>
+                <property name="icon-name">list-add-symbolic</property>
+                <property name="halign">start</property>
+                <signal name="clicked" handler="on_add_button_clicked" />
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton" id="edit_button">
+                <property name="label" translatable="yes">_Edit</property>
+                <property name="icon-name">document-edit-symbolic</property>
+                <signal name="clicked" handler="on_edit_button_clicked" />
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton" id="delete_button">
+                <property name="label" translatable="yes">_Delete</property>
+                <property name="icon-name">user-trash-symbolic</property>
+                <property name="css-classes">destructive-action</property>
+                <signal name="clicked" handler="on_delete_button_clicked" />
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+  </template>
+</interface> 

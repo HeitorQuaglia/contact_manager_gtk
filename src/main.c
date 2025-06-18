@@ -1,23 +1,19 @@
+#include <adwaita.h>
+
+#include "main_window.h"
 #include "phonebook_manager.h"
-#include "ui/phonebook_manager_window.h"
-#include <gtk/gtk.h>
 
-static void on_activate(GtkApplication *app, gpointer user_data) {
-    PhoneBookManager *manager = user_data;
-    GtkWidget *win = phonebook_manager_window_new(app, manager);
-    gtk_widget_set_visible(win, TRUE);
-}
-
-int main(int argc, char **argv) {
-    GtkApplication *app;
-    int status;
+int main(int argc, char *argv[]) {
     PhoneBookManager *manager = phonebook_manager_new();
+    phonebook_manager_load_all(manager);
 
-    app = gtk_application_new("com.contact.manager", G_APPLICATION_DEFAULT_FLAGS);
-    g_signal_connect(app, "activate", G_CALLBACK(on_activate), manager);
-    status = g_application_run(G_APPLICATION(app), argc, argv);
-    g_object_unref(app);
+    g_autoptr(AdwApplication) app = adw_application_new("org.example.contact-manager", G_APPLICATION_DEFAULT_FLAGS);
 
+    g_signal_connect(app, "activate", G_CALLBACK(main_window_on_activate), manager);
+
+    int status = g_application_run(G_APPLICATION(app), argc, argv);
+
+    phonebook_manager_save_all(manager);
     phonebook_manager_destroy(manager);
 
     return status;

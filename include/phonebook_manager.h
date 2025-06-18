@@ -1,17 +1,19 @@
 #ifndef PHONEBOOK_MANAGER_H
 #define PHONEBOOK_MANAGER_H
 
-#include "phonebook.h"
+#include <gio/gio.h>
+#include "phonebook_object.h"
 
 typedef struct {
-    PhoneBook **phonebooks;
-    int count;
+    GListStore *phonebooks;
 } PhoneBookManager;
 
 PhoneBookManager *phonebook_manager_new(void);
 void phonebook_manager_destroy(PhoneBookManager *manager);
-int phonebook_manager_add(PhoneBookManager *manager, PhoneBook *phonebook);
-int phonebook_manager_remove(PhoneBookManager *manager, const char *phonebook_id);
-PhoneBook *phonebook_manager_find(PhoneBookManager *manager, const char *phonebook_id);
+void phonebook_manager_add(PhoneBookManager *manager, PhoneBookObject *phonebook);
+void phonebook_manager_add_new(PhoneBookManager *manager);
+void phonebook_manager_remove(PhoneBookManager *manager, PhoneBookObject *phonebook);
+void phonebook_manager_load_all(PhoneBookManager *manager);
+void phonebook_manager_save_all(PhoneBookManager *manager);
 
 #endif //PHONEBOOK_MANAGER_H 

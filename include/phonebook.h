@@ -8,6 +8,7 @@ struct Contact;
 
 typedef struct PhoneBook {
     char *phonebook_id;
+    char *name;
     GPtrArray *contacts;
 } PhoneBook;
 

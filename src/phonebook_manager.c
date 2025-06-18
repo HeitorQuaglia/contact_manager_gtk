@@ -4,93 +4,40 @@
 #include <string.h>
 
 PhoneBookManager *phonebook_manager_new(void) {
-    PhoneBookManager *manager = malloc(sizeof(PhoneBookManager));
-    if (!manager) {
-        return NULL;
-    }
-    manager->phonebooks = NULL;
-    manager->count = 0;
+    PhoneBookManager *manager = g_new(PhoneBookManager, 1);
+    manager->phonebooks = g_list_store_new(PHONEBOOK_TYPE_OBJECT);
     return manager;
 }
 
 void phonebook_manager_destroy(PhoneBookManager *manager) {
-    if (!manager) {
-        return;
-    }
-    for (int i = 0; i < manager->count; i++) {
-        phonebook_destroy(manager->phonebooks[i]);
-    }
-    free(manager->phonebooks);
-    free(manager);
+    if (!manager) return;
+    g_object_unref(manager->phonebooks);
+    g_free(manager);
 }
 
-int phonebook_manager_add(PhoneBookManager *manager, PhoneBook *phonebook) {
-    if (!manager || !phonebook) {
-        return MODEL_EMPTY_RESOURCE;
-    }
-
-    PhoneBook **reallocated_phonebooks = realloc(manager->phonebooks, sizeof(PhoneBook *) * (manager->count + 1));
-    if (!reallocated_phonebooks) {
-        return MODEL_REALLOC_ERR;
-    }
-
-    manager->phonebooks = reallocated_phonebooks;
-    manager->phonebooks[manager->count] = phonebook;
-    manager->count++;
-
-    return MODEL_OP_SUCCESS;
+void phonebook_manager_add(PhoneBookManager *manager, PhoneBookObject *pb_obj) {
+    g_list_store_append(manager->phonebooks, pb_obj);
 }
 
-int phonebook_manager_remove(PhoneBookManager *manager, const char *phonebook_id) {
-    if (!manager || !phonebook_id) {
-        return MODEL_EMPTY_RESOURCE;
+void phonebook_manager_add_new(PhoneBookManager *manager) {
+    PhoneBook *pb = phonebook_create();
+    if (pb) {
+        PhoneBookObject *pb_obj = phonebook_object_new(pb);
+        phonebook_manager_add(manager, pb_obj);
+        g_object_unref(pb_obj);
     }
-
-    int index = -1;
-    for (int i = 0; i < manager->count; i++) {
-        if (strcmp(manager->phonebooks[i]->phonebook_id, phonebook_id) == 0) {
-            index = i;
-            break;
-        }
-    }
-
-    if (index == -1) {
-        return MODEL_RESOURCE_NOT_FOUND;
-    }
-
-    phonebook_destroy(manager->phonebooks[index]);
-
-    for (int i = index; i < manager->count - 1; i++) {
-        manager->phonebooks[i] = manager->phonebooks[i + 1];
-    }
-
-    manager->count--;
-    if (manager->count == 0) {
-        free(manager->phonebooks);
-        manager->phonebooks = NULL;
-    } else {
-        PhoneBook **reallocated_phonebooks = realloc(manager->phonebooks, sizeof(PhoneBook *) * manager->count);
-        if (!reallocated_phonebooks) {
-            // This is problematic, the manager is in an inconsistent state.
-            // For this app, we'll accept the memory leak of the old pointer.
-            return MODEL_REALLOC_ERR;
-        }
-        manager->phonebooks = reallocated_phonebooks;
-    }
-
-    return MODEL_OP_SUCCESS;
 }
 
-PhoneBook *phonebook_manager_find(PhoneBookManager *manager, const char *phonebook_id) {
-    if (!manager || !phonebook_id) {
-        return NULL;
-    }
+void phonebook_manager_remove(PhoneBookManager *manager, PhoneBookObject *pb_obj) {
+    g_list_store_remove(manager->phonebooks, g_list_store_find(manager->phonebooks, pb_obj, NULL));
+}
 
-    for (int i = 0; i < manager->count; i++) {
-        if (strcmp(manager->phonebooks[i]->phonebook_id, phonebook_id) == 0) {
-            return manager->phonebooks[i];
-        }
-    }
+void phonebook_manager_load_all(PhoneBookManager *manager) {
+    // TODO: Implement loading from a file
+    g_print("TODO: Load all phonebooks from file\n");
+}
 
-    return NULL;
+void phonebook_manager_save_all(PhoneBookManager *manager) {
+    // TODO: Implement saving to a file
+    g_print("TODO: Save all phonebooks to file\n");
 } 
