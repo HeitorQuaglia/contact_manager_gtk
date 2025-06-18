@@ -73,4 +73,9 @@ const char *contact_object_get_id(ContactObject *self) {
 const char *contact_object_get_name(ContactObject *self) {
     g_return_val_if_fail(CONTACT_IS_OBJECT(self), NULL);
     return self->contact->name;
+}
+
+Contact *contact_object_get_contact(ContactObject *self) {
+    g_return_val_if_fail(CONTACT_IS_OBJECT(self), NULL);
+    return self->contact;
 } 

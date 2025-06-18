@@ -11,5 +11,6 @@ ContactObject *contact_object_new(Contact *contact);
 
 const char *contact_object_get_id(ContactObject *self);
 const char *contact_object_get_name(ContactObject *self);
+Contact *contact_object_get_contact(ContactObject *self);
 
 #endif //CONTACT_OBJECT_H 

@@ -1,5 +1,6 @@
 #include "contact_manager_window.h"
 #include "contact_object.h"
+#include "contact_detail_window.h"
 #include <glib/gi18n.h>
 
 struct _ContactManagerWindow {
@@ -65,6 +66,19 @@ static void bind_list_item(GtkSignalListItemFactory *factory, GtkListItem *list_
     }
 }
 
+static void on_contact_activated(GtkListView *list_view, guint position, gpointer user_data) {
+    ContactManagerWindow *win = user_data;
+    ContactObject *contact = g_list_model_get_item(G_LIST_MODEL(win->contacts_store), position);
+    if (contact) {
+        GtkWindow *detail_win = GTK_WINDOW(contact_detail_window_new(
+            GTK_APPLICATION(g_application_get_default()),
+            contact
+        ));
+        gtk_window_present(detail_win);
+        g_object_unref(contact);
+    }
+}
+
 static void contact_manager_window_init(ContactManagerWindow *win) {
     gtk_widget_init_template(GTK_WIDGET(win));
 }
@@ -100,6 +114,7 @@ GtkWidget *contact_manager_window_new(GtkApplication *app, PhoneBook *phonebook)
     gtk_list_view_set_factory(GTK_LIST_VIEW(win->contacts_list_view), factory);
 
     g_signal_connect(selection_model, "notify::selected", G_CALLBACK(on_selection_changed), win);
+    g_signal_connect(win->contacts_list_view, "activate", G_CALLBACK(on_contact_activated), win);
 
     gtk_widget_set_sensitive(win->delete_contact_button, FALSE);
 
