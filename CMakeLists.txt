@@ -11,6 +11,20 @@ if (NOT UUID_LIBRARY)
     message(FATAL_ERROR "libuuid not found")
 endif()
 
+# GResource compilation
+find_program(GLIB_COMPILE_RESOURCES glib-compile-resources)
+if (NOT GLIB_COMPILE_RESOURCES)
+    message(FATAL_ERROR "glib-compile-resources not found")
+endif()
+
+set(RESOURCES_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/resources.xml)
+set(RESOURCES_C ${CMAKE_CURRENT_BINARY_DIR}/resources.c)
+add_custom_command(
+    OUTPUT ${RESOURCES_C}
+    COMMAND ${GLIB_COMPILE_RESOURCES} --target=${RESOURCES_C} --sourcedir=${CMAKE_CURRENT_SOURCE_DIR}/src/ui --generate-source ${RESOURCES_XML}
+    DEPENDS ${RESOURCES_XML}
+)
+
 set(SOURCES
         src/main.c
         src/util.c
@@ -18,7 +32,9 @@ set(SOURCES
         src/contact.c
         src/phone.c
         src/address.c
-        src/ui/main_window.c
+        src/phonebook_manager.c
+        src/ui/phonebook_manager_window.c
+        ${RESOURCES_C}
 )
 
 add_executable(contact_manager ${SOURCES})
